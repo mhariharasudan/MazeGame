@@ -3,7 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// The Actual Game Logic
+/* This class generates a nxn grid with values assigned by the calling Object. It indexes the individual 
+ * nodes as (i,j). It assumes that the calling function has a sequential numbering of the nodes and retrieves
+ * index from it using the size of the grid. It is responsible for finding a path based on a cell's value and
+ * exit if a loop is present
+ */
 public class MazeGame : MonoBehaviour {
     int[,] nodes;
     int[] dirValues;

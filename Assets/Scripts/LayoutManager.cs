@@ -4,6 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
+/*  This class is responsible for the layout generation, button click event callback functions and
+ *  is an interface to the game logic. This generates a nxn grid objects and all of them are numbered sequentially
+ */
 public class LayoutManager : MonoBehaviour
 {
     public GameObject cubeUp, cubeDown, cubeLeft, cubeRight; // Reference to the grid cell prefab
@@ -14,10 +17,12 @@ public class LayoutManager : MonoBehaviour
     public GameObject ModalPanel; // Reference to the Panel that holds the Message Box
     bool envSetup, gameStart, displayOn;
     float updateInterval , xOff, zOff;
-    GameObject prevTransform;
+    GameObject prevTransform; // Reference to the previous object on which the transform was changed
     AudioSource audioSrc;
     int rows;
     int[] indices;
+
+// Button Event Call back Functions------------------------------------------------------------------
 
     /* Resets the env variables, destroys the existing objects if any, 
      * reads the inputted number and generates the env layout.
@@ -50,23 +55,6 @@ public class LayoutManager : MonoBehaviour
         rows = 0;
     }
 
-    /* Restarts the game by resetting the object transforms to their original
-     * This gets triggered each time a new grid is pressed within the same set of grids without restarting/resetting
-     */
-    private void RestartGame()
-    {
-        if (!displayOn)
-        {
-            gameStart = false;
-            for (int count = 0; count < rows * rows; count++)
-            {
-                GameObject go = GameObject.Find(count.ToString());
-                go.transform.position = new Vector3(go.transform.position[0], 0.25f, go.transform.position[2]);
-                go.GetComponent<Renderer>().material.color = Color.white;
-            }
-        }
-    }
-
     /* Restarts a new game as ResetGame but retains the number of rows generated before
      * This gets triggered on Restart Button click event
      */
@@ -84,6 +72,25 @@ public class LayoutManager : MonoBehaviour
                 return;
         }
     }
+
+    /* Restarts the game by resetting the object transforms to their original
+     * This gets triggered each time a new grid is pressed within the same set of grids without restarting/resetting
+     */
+    private void RestartGame()
+    {
+        if (!displayOn)
+        {
+            gameStart = false;
+            for (int count = 0; count < rows * rows; count++)
+            {
+                GameObject go = GameObject.Find(count.ToString());
+                go.transform.position = new Vector3(go.transform.position[0], 0.25f, go.transform.position[2]);
+                go.GetComponent<Renderer>().material.color = Color.white;
+            }
+        }
+    }
+
+// Environment Layout Control functions--------------------------------------------------------------
 
     // Cleans up the environment by destroying the grid cells
     private void ClearGrid()
@@ -165,6 +172,21 @@ public class LayoutManager : MonoBehaviour
         }
     }
 
+    /* Pushes the grid cells into the surface by half a magnitude to create an impression of being pressed,
+     * changes its color and resets the transform of the previously pressed grid cell
+     */
+    private void TransformObj(GameObject go)
+    {
+        go.transform.position = new Vector3(go.transform.position[0], 0.0f, go.transform.position[2]);
+        go.GetComponent<Renderer>().material.color = new Color(150f / 255f, 255f / 255f, 220f / 255f);
+        audioSrc.PlayOneShot(impact, 0.7f);
+        if (prevTransform != null)
+        {
+            prevTransform.transform.position = new Vector3(prevTransform.transform.position[0], 0.25f, prevTransform.transform.position[2]);
+        }
+        prevTransform = go;
+    }
+
     // Use this for initialization
     void Start()
     {
@@ -180,20 +202,7 @@ public class LayoutManager : MonoBehaviour
         rows = 0;
     }
 
-    /* Pushes the grid cells into the surface by half a magnitude to create an impression of being pressed,
-     * changes its color and resets the transform of the previously pressed grid cell
-     */
-    private void TransformObj(GameObject go)
-    {
-        go.transform.position = new Vector3(go.transform.position[0], 0.0f, go.transform.position[2]);
-        go.GetComponent<Renderer>().material.color = new Color(150f/255f, 255f/255f, 220f/255f);
-        audioSrc.PlayOneShot(impact, 0.7f);
-        if (prevTransform != null)
-        {
-            prevTransform.transform.position = new Vector3(prevTransform.transform.position[0], 0.25f, prevTransform.transform.position[2]);
-        }
-        prevTransform = go;
-    }
+// Periodic update functions that also interfaces with the game -------------------------------------
 
     // Update is called once per frame
     void Update()
@@ -262,7 +271,7 @@ public class LayoutManager : MonoBehaviour
 
     }
 
-    // Displays the message and waits for n seconds
+    // Displays the message box and waits for n seconds
     IEnumerator DisplayMsg(String msg)
     {
         displayOn = true;
